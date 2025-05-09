@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Meeting Confirmed</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        .success-message {
+            color: #4CAF50;
+            font-size: 24px;
+            margin: 20px 0;
+        }
+        .meeting-details {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .meeting-details h3 {
+            margin-top: 0;
+        }
+        .meeting-details p {
+            margin: 10px 0;
+        }
+        .meeting-content {
+            white-space: pre-wrap;
+            font-family: inherit;
+            line-height: 1.5;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Meeting Confirmed</h1>
+    <div class="success-message">✓ Your meeting has been successfully confirmed!</div>
+    
+    <div class="meeting-details">
+        <h3>Meeting Details</h3>
+        <p><strong>Subject:</strong> {{ meeting.subject }}</p>
+        <p><strong>Start Time:</strong> {{ meeting.start_time|replace("T", " ")|replace(".000Z", "") }}</p>
+        <p><strong>Duration:</strong> {{ meeting.duration }} minutes</p>
+        <p><strong>Participants:</strong> {{ meeting.participants|join(', ') }}</p>
+        
+        <div class="meeting-content">
+            {{ meeting.content|safe }}
+        </div>
+    </div>
+    
+    <p>You will receive a calendar invitation shortly.</p>
+    <p>You can close this window now.</p>
+</body>
+</html> 

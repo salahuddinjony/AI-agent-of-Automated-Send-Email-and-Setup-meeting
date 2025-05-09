@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Error</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        .error-message {
+            color: #f44336;
+            font-size: 24px;
+            margin: 20px 0;
+        }
+        .error-details {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <h1>Error</h1>
+    <div class="error-message">⚠️ Something went wrong</div>
+    
+    <div class="error-details">
+        <p>We encountered an error while processing your meeting confirmation:</p>
+        <p><strong>{{ error }}</strong></p>
+    </div>
+    
+    <p>Please try again later or contact the meeting organizer.</p>
+</body>
+</html> 

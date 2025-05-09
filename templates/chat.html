@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Meeting Assistant</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { 
+            padding: 20px;
+            background-color: #f5f5f5;
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 40px);
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px 10px 0 0;
+            min-height: 0;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 15px;
+            max-width: 80%;
+        }
+        .user-message {
+            background: #007bff;
+            color: white;
+            margin-left: auto;
+        }
+        .bot-message {
+            background: #e9ecef;
+            color: black;
+            margin-right: auto;
+        }
+        .chat-input {
+            padding: 20px;
+            background: #fff;
+            border-top: 1px solid #dee2e6;
+            border-radius: 0 0 10px 10px;
+            flex-shrink: 0;
+        }
+        .input-container {
+            position: relative;
+            display: flex;
+            align-items: flex-end;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+        .input-container textarea {
+            flex: 1;
+            border: none;
+            outline: none;
+            resize: none;
+            padding: 8px;
+            max-height: 200px;
+            min-height: 24px;
+            font-size: 16px;
+            line-height: 1.5;
+            background: transparent;
+        }
+        .input-container textarea:focus {
+            box-shadow: none;
+        }
+        .send-button {
+            background: none;
+            border: none;
+            padding: 8px;
+            margin-left: 8px;
+            cursor: pointer;
+            color: #007bff;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .send-button:hover {
+            color: #0056b3;
+        }
+        .send-button:disabled {
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+        .send-button svg {
+            width: 20px;
+            height: 20px;
+        }
+        .suggestions {
+            margin-top: 10px;
+        }
+        .suggestion-btn {
+            margin: 5px;
+            font-size: 0.9em;
+        }
+        .examples {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        .example-command {
+            color: #0d6efd;
+            cursor: pointer;
+            margin: 5px 0;
+        }
+        .loading-dots {
+            display: inline-block;
+            margin-left: 5px;
+        }
+        .loading-dots span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #6c757d;
+            margin: 0 2px;
+            animation: bounce 1.4s infinite ease-in-out;
+        }
+        .loading-dots span:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+        .loading-dots span:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+        @keyframes bounce {
+            0%, 80%, 100% { 
+                transform: scale(0);
+            }
+            40% { 
+                transform: scale(1.0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container chat-container">
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot-message">
+                Hi! I'm your AI meeting assistant. I can understand natural language commands like:
+                <div class="examples">
+                    <div class="example-command" onclick="suggest(this.textContent)">set up a meeting today 10AM with 30m to salah</div>
+                    <div class="example-command" onclick="suggest(this.textContent)">schedule a meeting tomorrow at 2pm with salahuddin0758@gmail.com</div>
+                    <div class="example-command" onclick="suggest(this.textContent)">send an email to salah about my condition</div>
+                </div>
+                What would you like me to help you with?
+            </div>
+        </div>
+        
+        <div class="chat-input">
+            <form id="chatForm">
+                <div class="input-container">
+                    <textarea 
+                        id="userInput" 
+                        placeholder="Type your message..." 
+                        rows="1"
+                        onkeydown="handleKeyDown(event)"
+                    ></textarea>
+                    <button type="submit" class="send-button" id="sendButton" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                        </svg>
+                    </button>
+                </div>
+            </form>
+            <div class="suggestions">
+                <button class="btn btn-outline-primary btn-sm suggestion-btn" onclick="suggest('set up a meeting')">Schedule Meeting</button>
+                <button class="btn btn-outline-primary btn-sm suggestion-btn" onclick="suggest('send an email')">Send Email</button>
+                <button class="btn btn-outline-primary btn-sm suggestion-btn" onclick="suggest('Help')">Help</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chatMessages = document.getElementById('chatMessages');
+        const chatForm = document.getElementById('chatForm');
+        const userInput = document.getElementById('userInput');
+
+        function addMessage(message, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+            messageDiv.textContent = message;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function showLoading() {
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'message bot-message';
+            loadingDiv.innerHTML = 'Thinking<span class="loading-dots"><span></span><span></span><span></span></span>';
+            loadingDiv.id = 'loadingMessage';
+            chatMessages.appendChild(loadingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function hideLoading() {
+            const loadingMessage = document.getElementById('loadingMessage');
+            if (loadingMessage) {
+                loadingMessage.remove();
+            }
+        }
+
+        function suggest(text) {
+            userInput.value = text;
+            userInput.focus();
+        }
+
+        // Update textarea and send button handling
+        const textarea = document.getElementById('userInput');
+        const sendButton = document.getElementById('sendButton');
+
+        function updateSendButton() {
+            sendButton.disabled = !textarea.value.trim();
+        }
+
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+            updateSendButton();
+        });
+
+        function handleKeyDown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                if (textarea.value.trim()) {
+                    chatForm.dispatchEvent(new Event('submit'));
+                }
+            }
+        }
+
+        // Update form submission
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const message = textarea.value.trim();
+            if (!message) return;
+
+            // Add user message
+            addMessage(message, true);
+            textarea.value = '';
+            textarea.style.height = 'auto';
+            updateSendButton();
+
+            // Show loading animation
+            showLoading();
+
+            try {
+                // Send message to server
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ message })
+                });
+
+                const data = await response.json();
+                
+                // Hide loading animation
+                hideLoading();
+                
+                // Add bot response
+                addMessage(data.response);
+
+                // If there's a form to show
+                if (data.show_form) {
+                    window.location.href = '/schedule';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                hideLoading();
+                addMessage('Sorry, there was an error processing your request.');
+            }
+        });
+    </script>
+</body>
+</html> 
